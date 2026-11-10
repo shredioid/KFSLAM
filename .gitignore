@@ -7,3 +7,5 @@ outputs/
 /data/
 weights/
 .env
+# 外部克隆的 depth 版光栅化器（见 USAGE.md / tools/setup_env.sh）
+third_party/diff_gaussian_rasterization_w_depth/
