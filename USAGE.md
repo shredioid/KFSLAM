@@ -6,8 +6,17 @@ The experiments use Python 3.10, CUDA-enabled PyTorch, and NVIDIA V100 32GB GPUs
 
 ```bash
 python -m pip install -r requirements.txt
-python -m pip install 'git+https://github.com/JonathonLuiten/diff-gaussian-rasterization-w-depth.git@cb65e4b86bc3bd8ed42174b72a62e8d3a3a71110'
+python -m pip install 'git+ssh://git@github.com/JonathonLuiten/diff-gaussian-rasterization-w-depth.git@cb65e4b86bc3bd8ed42174b72a62e8d3a3a71110'
 python run.py --list
+```
+
+The rasterizer is fetched over SSH (`git@github.com`); HTTPS clones of this repository are rate-limited on some networks. If SSH keys are unavailable, clone it manually and install from the local checkout:
+
+```bash
+git clone git@github.com:JonathonLuiten/diff-gaussian-rasterization-w-depth.git \
+  third_party/diff_gaussian_rasterization_w_depth
+git -C third_party/diff_gaussian_rasterization_w_depth checkout cb65e4b86bc3bd8ed42174b72a62e8d3a3a71110
+python -m pip install --no-build-isolation third_party/diff_gaussian_rasterization_w_depth
 ```
 
 For the optional MonoGS selection ablation, compile its separate renderer before use:
