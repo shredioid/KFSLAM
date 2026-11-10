@@ -2198,5 +2198,69 @@
     "sequence": "c2_transverse2_t3_v3",
     "config": "ablations/endogslam/motion_and_structure_guided/c3vd_v2/c2_transverse2_t3_v3.json",
     "input_frames": 733
+  },
+  {
+    "backbone": "splatam",
+    "variant": "full",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_sigmoid1_t4_v4",
+    "config": "final/splatam/configs/c3vd_v2/c1_sigmoid1_t4_v4.json",
+    "input_frames": 297
+  },
+  {
+    "backbone": "splatam",
+    "variant": "full",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_transverse1_t1_v4",
+    "config": "final/splatam/configs/c3vd_v2/c1_transverse1_t1_v4.json",
+    "input_frames": 622
+  },
+  {
+    "backbone": "splatam",
+    "variant": "full",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_transverse1_t4_v4",
+    "config": "final/splatam/configs/c3vd_v2/c1_transverse1_t4_v4.json",
+    "input_frames": 277
+  },
+  {
+    "backbone": "splatam",
+    "variant": "full",
+    "dataset": "c3vd_v2",
+    "sequence": "c2_transverse1_t1_v4",
+    "config": "final/splatam/configs/c3vd_v2/c2_transverse1_t1_v4.json",
+    "input_frames": 387
+  },
+  {
+    "backbone": "splatam",
+    "variant": "backbone",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_sigmoid1_t4_v4",
+    "config": "ablations/splatam/backbone/c3vd_v2/c1_sigmoid1_t4_v4.json",
+    "input_frames": 297
+  },
+  {
+    "backbone": "splatam",
+    "variant": "backbone",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_transverse1_t1_v4",
+    "config": "ablations/splatam/backbone/c3vd_v2/c1_transverse1_t1_v4.json",
+    "input_frames": 622
+  },
+  {
+    "backbone": "splatam",
+    "variant": "backbone",
+    "dataset": "c3vd_v2",
+    "sequence": "c1_transverse1_t4_v4",
+    "config": "ablations/splatam/backbone/c3vd_v2/c1_transverse1_t4_v4.json",
+    "input_frames": 277
+  },
+  {
+    "backbone": "splatam",
+    "variant": "backbone",
+    "dataset": "c3vd_v2",
+    "sequence": "c2_transverse1_t1_v4",
+    "config": "ablations/splatam/backbone/c3vd_v2/c2_transverse1_t1_v4.json",
+    "input_frames": 387
   }
 ]
