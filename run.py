@@ -18,12 +18,19 @@ def resolve_config(args):
     if args.frames is not None:c['data']['end']=c['data'].get('start',0)+args.frames;c['data']['num_frames']=-1
     if args.mapping_iters is not None:c['mapping']['num_iters']=args.mapping_iters;c['dynamic_mapping_iters']['enable']=False
     if args.tracking_iters is not None:c['tracking']['num_iters']=args.tracking_iters
+    if args.max_gaussians is not None:c['mapping']['max_gaussians']=int(args.max_gaussians)
+    if args.image_scale is not None and args.image_scale!=1.0:
+        s=float(args.image_scale)
+        c['data']['desired_image_height']=int(round(c['data']['desired_image_height']*s/2)*2)
+        c['data']['desired_image_width']=int(round(c['data']['desired_image_width']*s/2)*2)
+        for k in ('densification_image_height','densification_image_width'):
+            if k in c['data']:c['data'][k]=int(round(c['data'][k]*s/2)*2)
     c['primary_device']='cuda:0';c['use_wandb']=False
     return c
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--backbone',choices=['splatam','endogslam'],default='splatam');p.add_argument('--variant',default='full');p.add_argument('--dataset',choices=['c3vd','c3vd_v2'],default='c3vd_v2');p.add_argument('--sequence',default='c1_rectum_t2_v1');p.add_argument('--dataset-root',default='data');p.add_argument('--fold-root');p.add_argument('--output',default='outputs/run');p.add_argument('--gpu',default='0');p.add_argument('--list',action='store_true');p.add_argument('--dry-run',action='store_true');p.add_argument('--frames',type=int);p.add_argument('--mapping-iters',type=int);p.add_argument('--tracking-iters',type=int);p.add_argument('--cpu-offload',action='store_true')
+    p.add_argument('--backbone',choices=['splatam','endogslam'],default='splatam');p.add_argument('--variant',default='full');p.add_argument('--dataset',choices=['c3vd','c3vd_v2'],default='c3vd_v2');p.add_argument('--sequence',default='c1_rectum_t2_v1');p.add_argument('--dataset-root',default='data');p.add_argument('--fold-root');p.add_argument('--output',default='outputs/run');p.add_argument('--gpu',default='0');p.add_argument('--list',action='store_true');p.add_argument('--dry-run',action='store_true');p.add_argument('--frames',type=int);p.add_argument('--mapping-iters',type=int);p.add_argument('--tracking-iters',type=int);p.add_argument('--cpu-offload',action='store_true');p.add_argument('--max-gaussians',type=int,help='hard cap on total Gaussian count (0 = unlimited)');p.add_argument('--image-scale',type=float,help='scale desired image resolution, e.g. 0.75')
     args=p.parse_args()
     if args.list:
         jobs=json.loads((ROOT/'configs/experiments.json').read_text());print('\n'.join(f'{b}: {v}' for b,v in sorted({(j['backbone'],j['variant']) for j in jobs})));return

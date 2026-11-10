@@ -806,7 +806,7 @@ def initialize_new_params(new_pt_cld, mean3_sq_dist, gaussian_distribution,
 
 def add_new_gaussians(params, variables, curr_data, sil_thres, 
                       time_idx, mean_sq_dist_method, gaussian_distribution,
-                      temporal_deformation_cfg=None):
+                      temporal_deformation_cfg=None, max_gaussians=0):
     # Silhouette Rendering
     transformed_gaussians = transform_to_frame(params, time_idx, gaussians_grad=False, camera_grad=False)
     depth_sil_rendervar = transformed_params2depthplussilhouette(params, curr_data['w2c'],
@@ -838,6 +838,17 @@ def add_new_gaussians(params, variables, curr_data, sil_thres,
                                     curr_w2c, mask=non_presence_mask, compute_mean_sq_dist=True,
                                     mean_sq_dist_method=mean_sq_dist_method,
                                     fold_seg=curr_data.get('fold_seg'))
+        # Optional hard cap on the map size: keeps memory bounded on long
+        # sequences. New points are randomly subsampled (or skipped entirely)
+        # once the budget is exhausted; the existing map is never pruned here.
+        if max_gaussians and int(max_gaussians) > 0:
+            budget = int(max_gaussians) - int(params['means3D'].shape[0])
+            if budget <= 0:
+                return params, variables
+            if new_pt_cld.shape[0] > budget:
+                keep = torch.randperm(new_pt_cld.shape[0], device=new_pt_cld.device)[:budget]
+                new_pt_cld = new_pt_cld[keep]
+                mean3_sq_dist = mean3_sq_dist[keep]
         new_params = initialize_new_params(
             new_pt_cld, mean3_sq_dist, gaussian_distribution,
             temporal_deformation_cfg=temporal_deformation_cfg,
@@ -1249,11 +1260,16 @@ def rgbd_slam(config: dict):
                     densify_curr_data = curr_data
 
                 # Add new Gaussians to the scene based on the Silhouette
+                max_gaussians = int(config['mapping'].get('max_gaussians', 0) or 0)
                 params, variables = add_new_gaussians(params, variables, densify_curr_data, 
                                                       config['mapping']['sil_thres'], time_idx,
                                                       config['mean_sq_dist_method'], config['gaussian_distribution'],
-                                                      temporal_deformation_cfg=config.get('temporal_deformation', {}))
+                                                      temporal_deformation_cfg=config.get('temporal_deformation', {}),
+                                                      max_gaussians=max_gaussians)
                 post_num_pts = params['means3D'].shape[0]
+                if max_gaussians > 0 or time_idx % 25 == 0:
+                    print(f"[Gaussians] Frame {time_idx}: {post_num_pts} gaussians"
+                          + (f" (cap {max_gaussians})" if max_gaussians > 0 else ""))
                 if config['use_wandb']:
                     wandb_run.log({"Mapping/Number of Gaussians": post_num_pts,
                                    "Mapping/step": wandb_time_step})

@@ -233,6 +233,27 @@ class GradSLAMDataset(torch.utils.data.Dataset):
             color = datautils.channels_first(color)
         return color
 
+    def _clean_npy_depth(self, depth: np.ndarray) -> np.ndarray:
+        r"""Normalise a depth array stored as ``.npy``.
+
+        C3VD-v2 releases may ship depth as float32 **millimetres** stored with a
+        leading singleton axis (``(1, H, W)``). Those files also contain ``inf``
+        and non-physical filler values (1e8 .. 1e11 mm). Such entries are mapped
+        to ``0`` so that the downstream ``depth > 0`` valid mask skips them;
+        leaving them in place would inject ``inf`` into the RGB-D loss.
+
+        Non-positive values and values beyond 2 m (2000 mm) are treated as
+        invalid as well: the endoscopic working range is a few centimetres, so
+        anything beyond 2 m is a fill value rather than a real surface.
+        """
+        depth = np.squeeze(depth)
+        if depth.ndim != 2:
+            raise ValueError(f"Unexpected .npy depth shape after squeeze: {depth.shape}")
+        invalid = ~np.isfinite(depth) | (depth <= 0) | (depth > 2e3)
+        if invalid.any():
+            depth = np.where(invalid, 0.0, depth)
+        return depth
+
     def _preprocess_depth(self, depth: np.ndarray):
         r"""Preprocesses the depth image by resizing, adding channel dimension, and scaling values to meters. Optionally
         converts depth from channels last :math:`(H, W, 1)` to channels first :math:`(1, H, W)` representation.
@@ -306,6 +327,9 @@ class GradSLAMDataset(torch.utils.data.Dataset):
             depth = readEXR_onlydepth(depth_path)
         elif ".tif" in depth_path or ".tiff" in depth_path:
             depth = np.asarray(Image.open(depth_path), dtype=np.float64)
+        elif ".npy" in depth_path:
+            depth = np.asarray(np.load(depth_path), dtype=np.float64)
+            depth = self._clean_npy_depth(depth)
         else:
             raise ValueError(f"Depth image format not supported: {depth_path}")
 

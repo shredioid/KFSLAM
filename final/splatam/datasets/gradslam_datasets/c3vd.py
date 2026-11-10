@@ -46,6 +46,9 @@ class C3VDDataset(GradSLAMDataset):
         depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.tiff"))
         if not depth_paths:
             depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.tif"))
+        if not depth_paths:
+            # Some C3VD-v2 releases ship depth as float32 millimetre .npy
+            depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.npy"))
         embedding_paths = None
         if self.load_embeddings:
             embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
